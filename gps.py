@@ -1,26 +1,28 @@
 from machine import Pin,UART
-from micropyGPS import MicropyGPS
+from harddrive.micropyGPS import MicropyGPS
 import time
 class GPS:
-    def __init__(self,rx:int,tx:int,EN:int,baudrate:int,bus:int,time_zone=8):
+    def __init__(self,rx:int,tx:int,en:int,baudrate:int,bus:int,time_zone=8,stop=0,cmode=False):
         self.bus=bus
         self.baudrate=baudrate
         self.uart1=UART(bus, baudrate=baudrate, tx=tx, rx=rx)
-        self.EN=Pin(EN,Pin.OUT,value=1)
+        self.en=Pin(en,Pin.OUT,value=stop)
         self.rx=rx
         self.tx=tx
+        self.cmode=cmode
+        self.mode=0
         self.my_gps=MicropyGPS(time_zone)
         self.my_gps.local_offset
-        self.mode=0
+        self.stop=stop
     def off(self):
         self.uart1.deinit()
-        self.EN.value(1)
+        self.en.value(self.stop)
         Pin(self.rx,Pin.OUT,value=0)
         Pin(self.tx,Pin.OUT,value=0)
         self.mode=0
     def on(self):
         self.uart1=UART(self.bus, baudrate=self.baudrate, tx=self.tx, rx=self.rx)
-        self.EN.value(0)
+        self.en.value(not self.stop)
         self.mode=1
     def getinf(self):
         time.sleep(0.1)
